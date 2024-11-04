@@ -151,17 +151,8 @@ def find_nearby_coffee_shops(city, radius=1000):
     
     return coffee_shops
 
-
-known_actions = {
-    "coffee_location": find_nearby_coffee_shops,
-    "coffee_taste": coffee_taste
-}
-
-
-action_re = re.compile(r'^Action: (\w+): (.*)$')
-
-
 def query(question, max_turns=10):
+    action_re = re.compile(r'^Action: (\w+): (.*)$')
     i = 0
     bot = Agent(prompt)
     next_prompt = question
@@ -184,7 +175,13 @@ def query(question, max_turns=10):
             next_prompt = "Observation: {}".format(observation)
         else:
             return
-    
+
+
+known_actions = {
+    "coffee_location": find_nearby_coffee_shops,
+    "coffee_taste": coffee_taste
+}
+
 
 if __name__ == "__main__":
     
@@ -194,8 +191,8 @@ if __name__ == "__main__":
         if question.lower() in ['exit', 'quit']:
             print("Goodbye!")
             continue_asking = False
-        
-        query(question)
+        else:
+            query(question)
 
 
 

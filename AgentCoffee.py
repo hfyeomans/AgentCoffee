@@ -3,6 +3,7 @@ import re
 import httpx
 import os
 import requests
+import streamlit as st
 
 google_maps_key = os.getenv("GOOGLE_MAPS_API_KEY")
 
@@ -186,16 +187,16 @@ def query(question, max_turns=10):
             return
     
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    continue_asking = True
-    while continue_asking:
-        question = input("Enter your question: ")
-        if question.lower() in ['exit', 'quit']:
-            print("Goodbye!")
-            continue_asking = False
+#     continue_asking = True
+#     while continue_asking:
+#         question = input("Enter your question: ")
+#         if question.lower() in ['exit', 'quit']:
+#             print("Goodbye!")
+#             continue_asking = False
         
-        query(question)
+#         query(question)
 
 
 
@@ -226,8 +227,8 @@ question = st.text_input('Ask me a question:', 'Where can I find a coffee shop i
 if st.button('Send'):
     if question:
         st.session_state.conversation.append({"role": "user", "content": question})
-        
-        
+        # Query the Agent      
+        query(question)
 
 #TODO - Output the result
 
