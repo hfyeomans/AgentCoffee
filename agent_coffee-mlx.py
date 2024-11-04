@@ -188,11 +188,12 @@ def query(question, max_turns=10):
 
 if __name__ == "__main__":
     
-    while True:
+    continue_asking = True
+    while continue_asking:
         question = input("Enter your question: ")
         if question.lower() in ['exit', 'quit']:
             print("Goodbye!")
-            break
+            continue_asking = False
         
         query(question)
 
