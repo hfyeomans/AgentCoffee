@@ -151,16 +151,6 @@ def find_nearby_coffee_shops(city, radius=1000):
     
     return coffee_shops
 
-
-    
-known_actions = {
-    "coffee_location": find_nearby_coffee_shops,
-    "coffee_taste": coffee_taste
-}
-
-
-action_re = re.compile(r'^Action: (\w+): (.*)$')
-
 def query(question, max_turns=10):
     i = 0
     bot = Agent(prompt)
@@ -184,6 +174,16 @@ def query(question, max_turns=10):
             next_prompt = "Observation: {}".format(observation)
         else:
             return
+    
+known_actions = {
+    "coffee_location": find_nearby_coffee_shops,
+    "coffee_taste": coffee_taste
+}
+
+
+action_re = re.compile(r'^Action: (\w+): (.*)$')
+
+
 
 if __name__ == "__main__":
     
