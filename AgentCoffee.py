@@ -159,47 +159,6 @@ known_actions = {
 }
 
 
-action_re = re.compile(r'^Action: (\w+): (.*)$')
-
-
-def query(question, max_turns=10):
-    i = 0
-    bot = Agent(prompt)
-    next_prompt = question
-    while i < max_turns:
-        i += 1
-        result = bot(next_prompt)
-        print(result)
-        actions = [
-            action_re.match(a) 
-            for a in result.split('\n') 
-            if action_re.match(a)
-        ]
-        if actions:
-            action, action_input = actions[0].groups()
-            if action not in known_actions:
-                raise Exception("Unknown action: {}: {}".format(action, action_input))
-            print(" -- running {} {}".format(action, action_input))
-            observation = known_actions[action](action_input)
-            print("Observation:", observation)
-            next_prompt = "Observation: {}".format(observation)
-        else:
-            return
-    
-
-# if __name__ == "__main__":
-    
-#     continue_asking = True
-#     while continue_asking:
-#         question = input("Enter your question: ")
-#         if question.lower() in ['exit', 'quit']:
-#             print("Goodbye!")
-#             continue_asking = False
-        
-#         query(question)
-
-
-
 
 '''
 Web interface for the AgentCoffee project.
@@ -208,28 +167,192 @@ Web interface for the AgentCoffee project.
 
 
 
-st.title('AgentCoffee, at your service!')
-st.write("Ask me anything about what your taste preferences are and I'll recommend ways to enjoy coffee! I'll also do my best to help you find coffee shops near you.")
+#question = st.text_input('Ask me a question:', 'Where can I find a coffee shop in Boston, MA?')
+# Initialize session state for conversation history
+if 'conversation_history' not in st.session_state:
+    st.session_state.conversation_history = []
 
-question = st.text_input('Ask me a question:', 'Where can I find a coffee shop in Boston, MA?')
+# Initialize session state for user input
+if 'user_input' not in st.session_state:
+    st.session_state.user_input = ""
+
+action_re = re.compile(r'^Action: (\w+): (.*)$')
+
+def process_query(user_input, max_turns=10):
+    bot = Agent(prompt)
+    next_prompt = user_input
+    final_response = ""
+    i = 0
+    
+    while i < max_turns:
+        i += 1
+        result = bot(next_prompt)
+        
+        actions = [
+            action_re.match(a) 
+            for a in result.split('\n') 
+            if action_re.match(a)
+        ]
+        
+        if actions:
+            action, action_input = actions[0].groups()
+            if action not in known_actions:
+                raise Exception(f"Unknown action: {action}: {action_input}")
+            
+            observation = known_actions[action](action_input)
+            next_prompt = f"Observation: {observation}"
+            final_response = result
+        else:
+            final_response = result
+            break
+            
+    return final_response
+
+def main():
+    st.title('AgentCoffee, at your service! ☕')
+    st.write("Ask me anything about your taste preferences and I'll recommend ways to enjoy coffee!")
+
+    # Custom CSS for styling
+    st.markdown("""
+        <style>
+            /* Container styling */
+            .chat-message {
+                padding: 1rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+                display: flex;
+                flex-direction: column;
+                white-space: pre-wrap;
+            }
+            
+            .user-message {
+                background-color: #f0f0f0;
+            }
+            
+            .assistant-message {
+                background-color: #e1f5fe;
+            }
+            
+            /* Button styling */
+            .stButton > button {
+                background-color: #1E3D59 !important;
+                color: white !important;
+                border: none !important;
+                padding: 0 16px !important;
+                border-radius: 4px !important;
+                height: 45px !important;
+                margin-top: -10px !important;
+            }
+            
+            .stButton > button:hover {
+                background-color: #2E4D69 !important;
+            }
+            
+            /* Input field styling */
+            .stTextInput > div > div > input {
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                height: 45px !important;
+                min-width: 600px !important;
+            }
+            
+            /* Coffee shop list styling */
+            .coffee-shop-list {
+                margin-top: 10px;
+                line-height: 1.5;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Create a container for chat history with scrolling
+    with st.expander("Chat History", expanded=True):
+        # Display chat history
+        for message in st.session_state.conversation_history:
+            role = message["role"]
+            content = message["content"]
+            
+            # Style based on role
+            if role == "user":
+                st.markdown(f"""
+                    <div class="chat-message user-message">
+                        <div><strong>You:</strong></div>
+                        <div>{content}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                    <div class="chat-message assistant-message">
+                        <div><strong>Assistant:</strong></div>
+                        <div>{content}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+    # Create input container
+    with st.container():
+        col1, col2 = st.columns([8, 1])
+        
+        # Input field
+        with col1:
+            user_input = st.text_input(
+                "Ask me about coffee...",
+                key="input_field",
+                value=st.session_state.user_input,
+                label_visibility="collapsed"
+            )
+
+        # Send button
+        with col2:
+            send_button = st.button("Send", key="send_button", use_container_width=True)
+
+    # Process input when send button is clicked
+    if send_button and user_input:
+        # Add user message to history
+        st.session_state.conversation_history.append({
+            "role": "user",
+            "content": user_input
+        })
+        
+        # Show processing status
+        status = st.empty()
+        status.text("Processing...")
+        
+        try:
+            # Get response from bot
+            response = process_query(user_input)
+            
+            # Add bot response to history
+            st.session_state.conversation_history.append({
+                "role": "assistant",
+                "content": response
+            })
+            
+            # Clear status and input
+            status.empty()
+            st.session_state.user_input = ""
+            st.rerun()
+            
+        except Exception as e:
+            status.error(f"Error: {str(e)}")
+
+    # Clear chat button
+    if st.button('Clear Chat', key='clear_chat'):
+        st.session_state.conversation_history = []
+        st.session_state.user_input = ""
+        st.rerun()
+
+    # Sidebar information
+    with st.sidebar:
+        st.subheader("About AgentCoffee")
+        st.write("""
+        AgentCoffee can:
+        - Find coffee shops near you
+        - Recommend coffee based on your taste
+        - Help you discover new coffee experiences
+        """)
+
+if __name__ == "__main__":
+    main()
 
 
+#TODO: Depending on the order of the questions asked the both tools may not run.
 
-
-#TODO - Chat history
-
-#TODO - Map of coffee shops (Google maps?)
-
-#TODO - Conversation
-
-#TODO - Button to hit send and run the model
-
-if st.button('Send'):
-    if question:
-        st.session_state.conversation.append({"role": "user", "content": question})
-        # Query the Agent      
-        query(question)
-
-#TODO - Output the result
-
-#TODO - Add a button to clear the chat history
