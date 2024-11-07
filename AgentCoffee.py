@@ -165,9 +165,6 @@ Web interface for the AgentCoffee project.
 
 '''
 
-
-
-#question = st.text_input('Ask me a question:', 'Where can I find a coffee shop in Boston, MA?')
 # Initialize session state for conversation history
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
