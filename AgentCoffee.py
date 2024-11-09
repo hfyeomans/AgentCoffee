@@ -1,6 +1,5 @@
 from mlx_lm import load, generate
 import re
-import httpx
 import os
 import requests
 import streamlit as st
