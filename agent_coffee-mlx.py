@@ -145,8 +145,8 @@ def find_nearby_coffee_shops(city, radius=1000):
         coffee_shops.append({
             'name': name,
             'address': address,
-         #   'latitude': shop_lat,
-         #   'longitude': shop_lng
+            'latitude': shop_lat,
+            'longitude': shop_lng
         })
     
     return coffee_shops
