@@ -1,0 +1,30 @@
+# Core dependencies
+openai>=1.3.0
+pydantic>=2.0.0
+redis>=4.5.0
+aiohttp>=3.8.0
+tenacity>=8.2.0
+networkx>=3.0
+
+# Optional dependencies for enhanced functionality
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0  # For better similarity calculations
+
+# Visualization dependencies
+plotly>=5.14.0
+kaleido>=0.2.1  # For plotly image export
+
+# Original dependencies
+python-dotenv>=1.0.0
+httpx>=0.24.0
+requests>=2.31.0
+streamlit>=1.25.0
+mlx-lm>=0.0.6  # For MLX models
+
+# Development dependencies
+pytest>=7.3.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.3.0
